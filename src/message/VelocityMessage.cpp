@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <cmath>
 
+
 namespace {
     namespace FieldIndex {
         constexpr int SUBTYPE_START    = 5;
@@ -23,6 +24,8 @@ namespace {
         constexpr int VR_END           = 46;
     }
 }
+
+using namespace adsb::message;
 
 VelocityMessage::VelocityMessage(const std::string& icao, int type_code, const std::vector<int>& payload)
     : ADSBMessage(icao, type_code, payload) {

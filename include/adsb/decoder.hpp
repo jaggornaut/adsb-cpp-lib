@@ -5,10 +5,11 @@
 #include <memory>
 #include <vector>
 
-class ADSBMessage;
-class AirbornePositionMessage;
+#include "message/ADSBMessage.hpp"
+#include "message/AirbornePositionMessage.hpp"
 
-namespace decoder {
+
+namespace adsb::decoder {
 
     /**
      * @brief Decodes a raw 112-bit ADS-B message.
@@ -17,7 +18,7 @@ namespace decoder {
      * @return A unique_ptr to the decoded ADSBMessage object.
      * Returns `nullptr` if the message is invalid or the CRC fails.
      */
-    std::unique_ptr<ADSBMessage> decode(const std::vector<int>& raw_bits);
+    std::unique_ptr<message::ADSBMessage> decode(const std::vector<int>& raw_bits);
 
     /**
      * @brief Calculates the global position from a pair of airborne position messages.
@@ -27,9 +28,9 @@ namespace decoder {
      * @param ref_pos The reference position of the receiver.
      * @return A PositionResult struct. The `is_valid` field is true on success.
      */
-    PositionResult calculate_global_position(
-        const AirbornePositionMessage& msg_a,
-        const AirbornePositionMessage& msg_b,
-        const GlobalPosition& ref_pos);
+    types::PositionResult calculate_global_position(
+        const message::AirbornePositionMessage& msg_a,
+        const message::AirbornePositionMessage& msg_b,
+        const types::GlobalPosition& ref_pos);
 
 }
