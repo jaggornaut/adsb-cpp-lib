@@ -2,7 +2,7 @@
 
 #include <vector>
 
-namespace utils {
+namespace adsb::utils {
     /**
      * @brief Converts a sequence of bits to an integer.
      *

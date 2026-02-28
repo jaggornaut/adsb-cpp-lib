@@ -3,6 +3,8 @@
 
 static const std::string FLIGHT_NAME_CHARS = "?ABCDEFGHIJKLMNOPQRSTUVWXYZ????? ???????????????0123456789??????";
 
+using namespace adsb::message;
+
 IdentificationMessage::IdentificationMessage(const std::string& icao, int type_code, const std::vector<int>& payload)
     : ADSBMessage(icao, type_code, payload) {
     decode_payload();
@@ -22,12 +24,16 @@ IdentificationMessage::decode_category(std::vector<int>::const_iterator begin, s
         category_code = (category_code << 1) | *it;
     }
 
-    if (m_type_code == 4) {
+
+    if (m_type_code == 2) {
         category_code += 8;
-    } else if (m_type_code == 3) {
+    }
+    else if (m_type_code == 3) {
         category_code += 16;
     }
-
+    else if (m_type_code == 4) {
+        category_code += 24;
+    }
     return static_cast<EmitterCategory>(category_code);
 }
 
@@ -65,20 +71,37 @@ std::string IdentificationMessage::to_string() const {
     return ss.str();
 }
 
-std::string to_string(IdentificationMessage::EmitterCategory category) {
+/**
+ * @brief Utility function to convert an EmitterCategory to a string.
+ */
+std::string adsb::message::to_string(IdentificationMessage::EmitterCategory category) {
     switch (category) {
-        case IdentificationMessage::EmitterCategory::LIGHT:               return "Light";
-        case IdentificationMessage::EmitterCategory::SMALL:               return "Small";
-        case IdentificationMessage::EmitterCategory::LARGE:               return "Large";
-        case IdentificationMessage::EmitterCategory::HIGH_VORTEX_LARGE:   return "High Vortex";
-        case IdentificationMessage::EmitterCategory::HEAVY:               return "Heavy";
+        case IdentificationMessage::EmitterCategory::NO_INFO_A:           return "No Info A0";
+        case IdentificationMessage::EmitterCategory::LIGHT:               return "Light Aircraft";
+        case IdentificationMessage::EmitterCategory::SMALL:               return "Small Aircraft";
+        case IdentificationMessage::EmitterCategory::LARGE:               return "Medium Aircraft";
+        case IdentificationMessage::EmitterCategory::HIGH_VORTEX_LARGE:   return "High Vortex Large";
+        case IdentificationMessage::EmitterCategory::HEAVY:               return "Heavy Aircraft";
         case IdentificationMessage::EmitterCategory::HIGH_PERFORMANCE:    return "High Performance";
         case IdentificationMessage::EmitterCategory::ROTORCRAFT:          return "Rotorcraft";
-        case IdentificationMessage::EmitterCategory::GLIDER_SAILPLANE:    return "Glider";
+
+        case IdentificationMessage::EmitterCategory::NO_INFO_B:           return "No Info B0";
+        case IdentificationMessage::EmitterCategory::GLIDER_SAILPLANE:    return "Glider/Sailplane";
         case IdentificationMessage::EmitterCategory::LIGHTER_THAN_AIR:    return "Lighter-than-air";
+        case IdentificationMessage::EmitterCategory::PARACHUTIST_SKYDIVER: return "Parachutist/Skydiver";
+        case IdentificationMessage::EmitterCategory::ULTRALIGHT_HANG_GLIDER: return "Ultralight/Hang Glider";
+        case IdentificationMessage::EmitterCategory::RESERVED_B5:         return "Reserved B5";
         case IdentificationMessage::EmitterCategory::UNMANNED_AERIAL_VEHICLE: return "UAV";
+        case IdentificationMessage::EmitterCategory::SPACE_TRANS_ATMOSPHERIC: return "Space/Transatmospheric";
+
+        case IdentificationMessage::EmitterCategory::NO_INFO_C:           return "No Info C0";
         case IdentificationMessage::EmitterCategory::SURFACE_EMERGENCY_VEHICLE: return "Surface Emergency Vehicle";
         case IdentificationMessage::EmitterCategory::SURFACE_SERVICE_VEHICLE: return "Surface Service Vehicle";
+        case IdentificationMessage::EmitterCategory::POINT_OBSTACLE:      return "Ground Obstacle Point";
+        case IdentificationMessage::EmitterCategory::CLUSTER_OBSTACLE:    return "Ground Obstacle Cluster";
+        case IdentificationMessage::EmitterCategory::LINE_OBSTACLE:       return "Ground Obstacle Line";
+
+        case IdentificationMessage::EmitterCategory::UNKNOWN:
         default:                                                          return "Unknown";
     }
 }

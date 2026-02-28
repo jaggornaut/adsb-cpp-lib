@@ -4,7 +4,7 @@
 #include <sstream>
 #include <utility>
 
-
+using namespace adsb::message;
 ADSBMessage::ADSBMessage(std::string icao, int type_code, std::vector<int> payload)
     : m_payload(std::move(payload)),
       m_icao(std::move(icao)),

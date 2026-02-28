@@ -66,7 +66,7 @@ namespace {
 
 }
 
-namespace decoder {
+namespace adsb::decoder {
     namespace FieldIndex {
         constexpr int ICAO_START    = 8;
         constexpr int ICAO_END      = 31;
@@ -75,7 +75,7 @@ namespace decoder {
         constexpr int PAYLOAD_END   = 88;
     }
 
-    std::unique_ptr<ADSBMessage> decode(const std::vector<int>& raw_bits) {
+    std::unique_ptr<adsb::message::ADSBMessage> decode(const std::vector<int>& raw_bits) {
         if (raw_bits.size() != 112) return nullptr;
 
         std::vector<int> corrected_bits = raw_bits;
@@ -94,6 +94,11 @@ namespace decoder {
         }
 
         if (!is_valid) return nullptr;
+
+        int df = 0;
+        for (int i = 0; i < 5; ++i)
+            df = (df << 1) | corrected_bits[i];
+        if (df != 17) return nullptr;
 
         unsigned int icao_val = 0;
         for (int i = FieldIndex::ICAO_START; i <= FieldIndex::ICAO_END; ++i) {
@@ -114,27 +119,27 @@ namespace decoder {
 
         switch (type_code) {
             case 1: case 2: case 3: case 4:
-                return std::make_unique<IdentificationMessage>(icao, type_code, payload);
+                return std::make_unique<adsb::message::IdentificationMessage>(icao, type_code, payload);
             case 9: case 10: case 11: case 12: case 13: case 14: case 15: case 16: case 17: case 18:
-                return std::make_unique<AirbornePositionMessage>(icao, type_code, payload);
+                return std::make_unique<adsb::message::AirbornePositionMessage>(icao, type_code, payload);
             case 19:
-                return std::make_unique<VelocityMessage>(icao, type_code, payload);
+                return std::make_unique<adsb::message::VelocityMessage>(icao, type_code, payload);
             default:
                 return nullptr;
         }
     }
 
-    PositionResult calculate_global_position(
-        const AirbornePositionMessage& msg_a,
-        const AirbornePositionMessage& msg_b,
-        const GlobalPosition& ref_pos) {
+    adsb::types::PositionResult calculate_global_position(
+        const adsb::message::AirbornePositionMessage& msg_a,
+        const adsb::message::AirbornePositionMessage& msg_b,
+        const adsb::types::GlobalPosition& ref_pos) {
 
         if (msg_a.is_odd_frame() == msg_b.is_odd_frame()) {
             return {{0.0, 0.0}, false};
         }
 
-        const AirbornePositionMessage& even_msg = msg_a.is_odd_frame() ? msg_b : msg_a;
-        const AirbornePositionMessage& odd_msg = msg_a.is_odd_frame() ? msg_a : msg_b;
+        const adsb::message::AirbornePositionMessage& even_msg = msg_a.is_odd_frame() ? msg_b : msg_a;
+        const adsb::message::AirbornePositionMessage& odd_msg = msg_a.is_odd_frame() ? msg_a : msg_b;
         auto t_even = even_msg.get_timestamp();
         auto t_odd = odd_msg.get_timestamp();
 
